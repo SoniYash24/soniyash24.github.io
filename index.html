@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome | My Personal Site</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1f2937;
+      --primary: #2563eb;
+      --card-bg: #f8fafc;
+      --border: #e2e8f0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --text: #f1f5f9;
+        --primary: #38bdf8;
+        --card-bg: #1e293b;
+        --border: #334155;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    p.subtitle {
+      font-size: 1.1rem;
+      opacity: 0.8;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .links a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      margin-top: 3rem;
+      font-size: 0.875rem;
+      opacity: 0.6;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Hello, World! 👋</h1>
+      <p class="subtitle">Welcome to my new website hosted on GitHub Pages.</p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>About Me</h2>
+        <p>This is a lightweight starter page. You can edit this section to include a brief intro, your research background, or current projects.</p>
+      </section>
+
+      <section class="card">
+        <h2>Quick Links</h2>
+        <div class="links">
+          <a href="https://github.com" target="_blank" rel="noopener">GitHub Profile</a>
+          <a href="mailto:example@domain.com">Contact Me</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2026 My GitHub Pages Site. Built with HTML & CSS.</p>
+    </footer>
+  </div>
+</body>
+</html>
