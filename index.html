@@ -391,6 +391,9 @@
       gap: 0.5rem;
       flex-wrap: wrap;
       align-items: center;
+      justify-content: flex-start;
+      margin-right: auto;
+      margin-left: 0;
     }
 
     .map-btn {
@@ -1789,6 +1792,7 @@
         zoom: 5,
         minZoom: 2,
         maxZoom: 18,
+        worldCopyJump: false, // Ensures seamless panning across the map edges
         scrollWheelZoom: true, // Enables zoom in and zoom out via scroll wheel
         touchZoom: true
       });
@@ -1810,11 +1814,31 @@
         tooltipAnchor: [0, -16]
       });
 
-      // Add each research node to map with hover tooltip and click popup
-      researchLocations.forEach(loc => {
-        const marker = L.marker([loc.lat, loc.lng], { icon: starIcon }).addTo(map);
-
-        // Hover tooltip: Displays immediately as cursor hovers over the star
+      // ============================================================
+      // KEEP TRACK OF ALL MARKERS
+      // ============================================================
+        
+      let markerCopies = [];
+        
+        
+      // ============================================================
+      // CREATE A MARKER
+      // ============================================================
+        
+      function createResearchMarker(loc, longitude) {
+      
+        const marker = L.marker(
+          [loc.lat, longitude],
+          {
+            icon: starIcon
+          }
+        ).addTo(map);
+        
+        
+        // ----------------------------------------------------------
+        // TOOLTIP
+        // ----------------------------------------------------------
+        
         const tooltipContent = `
           <div class="academic-tooltip">
             <strong>${loc.name}</strong>
@@ -1822,34 +1846,174 @@
             <span class="badge-loc">${loc.city}</span>
           </div>
         `;
-
+        
         marker.bindTooltip(tooltipContent, {
           direction: 'top',
           offset: [0, -12],
           opacity: 0.98,
           className: 'custom-tooltip'
         });
-
-        // Click popup with complete research summary
+      
+      
+        // ----------------------------------------------------------
+        // POPUP
+        // ----------------------------------------------------------
+      
         const popupContent = `
-          <div style="font-family:'Times New Roman', Times, serif; font-size: 15px; color:#2C2621; min-width: 200px;">
-            <h4 style="margin: 0 0 4px 0; color:#7A2021; font-size: 16px;">${loc.fullName}</h4>
-            <div style="font-weight: bold; color: #1F3A52; margin-bottom: 4px;">${loc.role} &bull; ${loc.city}</div>
-            <p style="margin: 0; line-height: 1.45; font-size: 14px; color: #5E564D;">${loc.details}</p>
+          <div style="
+            font-family:'Times New Roman', Times, serif;
+            font-size:15px;
+            color:#2C2621;
+            min-width:200px;
+          ">
+      
+            <h4 style="
+              margin:0 0 4px 0;
+              color:#7A2021;
+              font-size:16px;
+            ">
+              ${loc.fullName}
+            </h4>
+          
+            <div style="
+              font-weight:bold;
+              color:#1F3A52;
+              margin-bottom:4px;
+            ">
+              ${loc.role} &bull; ${loc.city}
+            </div>
+          
+            <p style="
+              margin:0;
+              line-height:1.45;
+              font-size:14px;
+              color:#5E564D;
+            ">
+              ${loc.details}
+            </p>
+          
           </div>
         `;
+        
         marker.bindPopup(popupContent);
+        
+        markerCopies.push(marker);
+      }
+    
+    
+      // ============================================================
+      // CREATE REPEATED WORLD MARKERS
+      // ============================================================
+    
+      function updateRepeatedMarkers() {
+      
+        // Remove old copies
+        markerCopies.forEach(marker => {
+          map.removeLayer(marker);
+        });
+      
+        markerCopies = [];
+      
+      
+        // Get currently visible longitude range
+        const bounds = map.getBounds();
+      
+        const west = bounds.getWest();
+        const east = bounds.getEast();
+      
+      
+        /*
+         * Determine which copies of the world are visible.
+         *
+         * Every world copy is 360 degrees apart.
+         */
+      
+        researchLocations.forEach(loc => {
+        
+          const originalLng = loc.lng;
+        
+        
+          // Find the first world copy that could be visible
+          const startCopy =
+            Math.floor((west - originalLng) / 360) - 1;
+        
+          // Find the last world copy that could be visible
+          const endCopy =
+            Math.ceil((east - originalLng) / 360) + 1;
+        
+        
+          for (
+            let copy = startCopy;
+            copy <= endCopy;
+            copy++
+          ) {
+          
+            const repeatedLng =
+              originalLng + (copy * 360);
+          
+          
+            // Only create the marker if it is actually visible
+            if (
+              repeatedLng >= west - 360 &&
+              repeatedLng <= east + 360
+            ) {
+            
+              createResearchMarker(
+                loc,
+                repeatedLng
+              );
+            
+            }
+          }
+        
+        });
+      }
+    
+    
+      // ============================================================
+      // INITIAL MARKERS
+      // ============================================================
+    
+      updateRepeatedMarkers();
+    
+    
+      // ============================================================
+      // UPDATE WHEN USER PANS / ZOOMS
+      // ============================================================
+    
+      map.on('moveend', function () {
+        updateRepeatedMarkers();
       });
+    
     }
 
     // Function to pan and zoom to specific research location
     function focusLocation(lat, lng, zoomLevel) {
-      if (map) {
-        map.flyTo([lat, lng], zoomLevel, {
+      if (!map) return;
+        
+      // Current center of the map
+      const currentCenter = map.getCenter();
+        
+      // Find the longitude copy closest to where the user currently is
+      let nearestLng = lng;
+        
+      while (nearestLng - currentCenter.lng > 180) {
+        nearestLng -= 360;
+      }
+    
+      while (nearestLng - currentCenter.lng < -180) {
+        nearestLng += 360;
+      }
+    
+      // Move to the nearest copy of the location
+      map.flyTo(
+        [lat, nearestLng],
+        zoomLevel,
+        {
           duration: 1.5,
           easeLinearity: 0.25
-        });
-      }
+        }
+      );
     }
 
     // Reset view to show all research locations
